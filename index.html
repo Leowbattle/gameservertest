@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="static/style.css">
+	<script src="static/index.js"></script>
+</head>
+<body>
+	<p>Enter name</p>
+	<input type="text" name="name" id="name">
+	<button id="join" onclick="tryJoinGame()">Join</button>
+	<p id="error" style="color:red"></p>
+	<canvas id="canvas" width="640" height="360" tabindex="0"></canvas>
+	<div id="chat">
+		<div id="messages"></div>
+		<div id="send">
+			<input type="text" name="message" id="message">
+		</div>
+	</div>
+</body>
+</html>

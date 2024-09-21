@@ -1,0 +1,26 @@
+#error {
+	color: red;
+}
+
+#canvas {
+	background-color: aqua;
+	outline: none;
+}
+
+#chat {
+	width: 640px;
+	height: 400px;
+	border: 1px solid black;
+	display: flex;
+	flex-direction: column;
+}
+
+#messages {
+	overflow: scroll;
+	flex-grow: 1;
+}
+
+#message {
+	width: 100%;
+	box-sizing: border-box;
+}
