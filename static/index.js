@@ -7,8 +7,12 @@ let messageBox;
 let playerList;
 let myName;
 
+function lerp(a, b, t) {
+	return a + t * (b - a);
+}
+
 // How often to send player position to the server
-const UPDATE_FREQUENCY = 10;
+const UPDATE_FREQUENCY = 5;
 
 let onlinePlayers = [];
 let socket;
@@ -48,7 +52,13 @@ function initSocket() {
 			onlinePlayers.push({
 				name: msg.name,
 				x: msg.x,
-				y: msg.y
+				y: msg.y,
+
+				// For movement interpolation
+				lastX: 0,
+				lastY: 0,
+
+				lastUpdate: Date.now()
 			});
 
 			updatePlayerList();
@@ -71,8 +81,13 @@ function initSocket() {
 
 			const p = onlinePlayers.find(p => p.name == msg.from);
 			if (p !== undefined) {
+				p.lastX = p.x;
+				p.lastY = p.y;
+
 				p.x = msg.x;
 				p.y = msg.y;
+
+				p.lastUpdate = Date.now();
 			}
 		}
 	});
@@ -147,7 +162,19 @@ function gameLoop(timestamp) {
 		if (p.name == myName) {
 			continue;
 		}
-		drawPlayer(p.x, p.y, p.name, "green");
+
+		// drawPlayer(p.x, p.y, p.name, "green");
+		// drawPlayer(p.lastX, p.lastY, p.name, "pink");
+		
+		// TODO: If posAge > ... {do something?}
+		const posAge = (Date.now() - p.lastUpdate) / 1000;
+		
+		const t = posAge * UPDATE_FREQUENCY;
+		console.log(posAge);
+		const x = lerp(p.lastX, p.x, t);
+		const y = lerp(p.lastY, p.y, t);
+
+		drawPlayer(x, y, p.name, "yellow");
 	}
 
 	lastTime = time;

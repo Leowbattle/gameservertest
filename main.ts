@@ -148,6 +148,7 @@ function gamewsHandler(req: Request): Response {
 			players[i].x = msg.x;
 			players[i].y = msg.y;
 
+			// TODO: Send out 1 update packet to each client
 			for (const p of players) {
 				if (p.name == players[i].name) {
 					continue;
