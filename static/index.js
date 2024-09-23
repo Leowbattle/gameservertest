@@ -4,10 +4,12 @@ let nameInput;
 let errorText;
 let messages;
 let messageBox;
+let playerList;
 
 // How often to send player position to the server
 const UPDATE_FREQUENCY = 10;
 
+let onlinePlayers = [];
 let socket;
 function initSocket() {
 	socket = new WebSocket("gamews");
@@ -32,11 +34,33 @@ function initSocket() {
 		if (msg.type == "refuse-join") {
 			errorText.innerHTML = msg.reason;
 		}
+		else if (msg.type == "accept-join") {
+			// We have been accepted to join the server
+
+			onlinePlayers = msg.players;
+
+			updatePlayerList();
+		}
 		else if (msg.type == "player-joined") {
 			addChat("server", `${msg.name} has joined the game`);
+
+			onlinePlayers.push({
+				name: msg.name,
+				x: msg.x,
+				y: msg.y
+			});
+
+			updatePlayerList();
 		}
 		else if (msg.type == "player-left") {
 			addChat("server", `${msg.name} has left the game`);
+
+			let i = onlinePlayers.findIndex(p => p.name == msg.name);
+			if (i != -1) {
+				onlinePlayers.splice(i, 1);
+			}
+
+			updatePlayerList();
 		}
 		else if (msg.type == "recieve-chat") {
 			addChat(msg.from, msg.text);
@@ -62,6 +86,16 @@ function addChat(from, msg) {
 	let messageNode = document.createTextNode(`${from}: ${msg}`);
 	messages.appendChild(messageNode);
 	messages.appendChild(document.createElement("br"));
+}
+
+function updatePlayerList() {
+	playerList.innerHTML = "";
+
+	for (let p of onlinePlayers) {
+		let node = document.createElement("span");
+		node.innerText = p.name; // Using innerHTML here allows an XSS attack
+		playerList.appendChild(node);
+	}
 }
 
 let currentKeys = new Set();
@@ -106,6 +140,7 @@ window.onload = () => {
 	errorText = document.getElementById("error");
 	messages = document.getElementById("messages");
 	messageBox = document.getElementById("message");
+	playerList = document.getElementById("playerlist");
 
 	canvas.addEventListener("keydown", e => {
 		currentKeys.add(e.code);

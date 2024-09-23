@@ -4,6 +4,8 @@ import { serveDir, serveFile } from "@std/http/file-server";
 interface PlayerInfo {
 	socket: WebSocket,
 	name: string,
+	x: number,
+	y: number,
 }
 
 let players: Array<PlayerInfo> = [];
@@ -93,14 +95,17 @@ function gamewsHandler(req: Request): Response {
 				}));
 			}
 			else {
-				players.push({
-					socket,
-					name: msg.name
-				});
-
 				socket.send(JSON.stringify({
 					type: "accept-join",
+					players
 				}));
+
+				players.push({
+					socket,
+					name: msg.name,
+					x: 0,
+					y: 0
+				});
 
 				// Notify others that someone has joined
 				for (let p of players) {
@@ -110,7 +115,9 @@ function gamewsHandler(req: Request): Response {
 		
 					p.socket.send(JSON.stringify({
 						type: "player-joined",
-						name: msg.name
+						name: msg.name,
+						x: 0, // Code duplication blah blah blah
+						y: 0,
 					}));
 				}
 			}
