@@ -10,6 +10,9 @@ let playerList;
 let myName;
 let myColour;
 
+let bgImage = new Image();
+bgImage.src = "/static/grass.jpg";
+
 function lerp(a, b, t) {
 	return a + t * (b - a);
 }
@@ -132,6 +135,14 @@ function isKeyDown(k) {
 	return currentKeys.has(k);
 }
 
+let screenLeft;
+let screenRight;
+function setupCamera() {
+	screenLeft = playerX - canvas.width / 2;
+	screenTop = playerY - canvas.height / 2;
+	ctx.translate(-screenLeft, -screenTop);
+}
+
 let playerX = 100;
 let playerY = 100;
 
@@ -141,29 +152,31 @@ function drawPlayer(x, y, name, colour) {
 	ctx.fillStyle = colour;
 	ctx.fillRect(x - playerSize / 2, y - playerSize / 2, playerSize, playerSize);
 
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "white";
 	ctx.fillText(name, x, y - playerSize / 2 - 10);
 }
 
-let lastTime = 0;
-function gameLoop(timestamp) {
-	let time = timestamp / 1000;
-	let dt = time - lastTime;
+function drawBackground() {
+	const ix = Math.floor(screenLeft / bgImage.width);
+	const iy = Math.floor(screenTop / bgImage.height);
 
-	// Update
+	ctx.drawImage(bgImage, ix * bgImage.width, iy * bgImage.height);
+	ctx.drawImage(bgImage, (ix + 1) * bgImage.width, iy * bgImage.height);
 
-	const playerSpeed = 250;
+	ctx.drawImage(bgImage, ix * bgImage.width, (iy + 1) * bgImage.height);
+	ctx.drawImage(bgImage, (ix + 1) * bgImage.width, (iy + 1) * bgImage.height);
+}
 
-	if (isKeyDown("KeyW")) playerY -= playerSpeed * dt;
-	if (isKeyDown("KeyS")) playerY += playerSpeed * dt;
-	if (isKeyDown("KeyA")) playerX -= playerSpeed * dt;
-	if (isKeyDown("KeyD")) playerX += playerSpeed * dt;
-
-	// Draw
+function draw() {
+	ctx.save();
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	ctx.font = "16px serif";
+	setupCamera();
+
+	drawBackground();
+
+	ctx.font = "30px serif";
 	ctx.textAlign = "center";
 
 	for (const p of onlinePlayers) {
@@ -186,6 +199,26 @@ function gameLoop(timestamp) {
 	}
 
 	drawPlayer(playerX, playerY, myName, myColour);
+
+	ctx.restore();
+}
+
+function update(dt) {
+	const playerSpeed = 250;
+
+	if (isKeyDown("KeyW")) playerY -= playerSpeed * dt;
+	if (isKeyDown("KeyS")) playerY += playerSpeed * dt;
+	if (isKeyDown("KeyA")) playerX -= playerSpeed * dt;
+	if (isKeyDown("KeyD")) playerX += playerSpeed * dt;
+}
+
+let lastTime = 0;
+function gameLoop(timestamp) {
+	const time = timestamp / 1000;
+	const dt = time - lastTime;
+
+	update(dt);
+	draw();
 
 	lastTime = time;
 
