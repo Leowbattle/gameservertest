@@ -130,6 +130,21 @@ function gamewsHandler(req: Request): Response {
 				}));
 			}
 		}
+		else if (msg.type == "player-update") {
+			let i = players.findIndex(p => p.socket == socket);
+			if (i == -1) {
+				// Unjoined players cannot update position
+				// TODO: Reduce code duplication with unjoined player commands
+				return;
+			}
+
+			// for (let p of players) {
+			// 	p.socket.send(JSON.stringify({
+			// 		type: "player-update",
+			// 		from: p.name,
+			// 	}));
+			// }
+		}
 	});
 
 	return response;
