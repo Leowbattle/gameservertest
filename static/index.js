@@ -166,8 +166,6 @@ function gameLoop(timestamp) {
 	ctx.font = "16px serif";
 	ctx.textAlign = "center";
 
-	drawPlayer(playerX, playerY, myName, myColour);
-
 	for (const p of onlinePlayers) {
 		if (p.name == myName) {
 			continue;
@@ -186,6 +184,8 @@ function gameLoop(timestamp) {
 
 		drawPlayer(x, y, p.name, p.colour);
 	}
+
+	drawPlayer(playerX, playerY, myName, myColour);
 
 	lastTime = time;
 
