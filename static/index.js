@@ -93,7 +93,7 @@ function updatePlayerList() {
 
 	for (let p of onlinePlayers) {
 		let node = document.createElement("span");
-		node.innerText = p.name; // Using innerHTML here allows an XSS attack
+		node.innerText = p.name + " "; // Using innerHTML here allows an XSS attack
 		playerList.appendChild(node);
 	}
 }
