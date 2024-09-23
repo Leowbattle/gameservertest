@@ -4,6 +4,7 @@ import { serveDir, serveFile } from "@std/http/file-server";
 interface PlayerInfo {
 	socket: WebSocket,
 	name: string,
+	colour: string,
 	x: number,
 	y: number,
 }
@@ -103,6 +104,7 @@ function gamewsHandler(req: Request): Response {
 				players.push({
 					socket,
 					name: msg.name,
+					colour: msg.colour,
 					x: 0,
 					y: 0
 				});
@@ -116,6 +118,7 @@ function gamewsHandler(req: Request): Response {
 					p.socket.send(JSON.stringify({
 						type: "player-joined",
 						name: msg.name,
+						colour: msg.colour,
 						x: 0, // Code duplication blah blah blah
 						y: 0,
 					}));

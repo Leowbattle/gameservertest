@@ -1,11 +1,14 @@
 let canvas;
 let ctx;
 let nameInput;
+let colourInput;
 let errorText;
 let messages;
 let messageBox;
 let playerList;
+
 let myName;
+let myColour;
 
 function lerp(a, b, t) {
 	return a + t * (b - a);
@@ -51,6 +54,7 @@ function initSocket() {
 
 			onlinePlayers.push({
 				name: msg.name,
+				colour: msg.colour,
 				x: msg.x,
 				y: msg.y,
 
@@ -162,7 +166,7 @@ function gameLoop(timestamp) {
 	ctx.font = "16px serif";
 	ctx.textAlign = "center";
 
-	drawPlayer(playerX, playerY, myName, "red");
+	drawPlayer(playerX, playerY, myName, myColour);
 
 	for (const p of onlinePlayers) {
 		if (p.name == myName) {
@@ -180,7 +184,7 @@ function gameLoop(timestamp) {
 		const x = lerp(p.lastX, p.x, t);
 		const y = lerp(p.lastY, p.y, t);
 
-		drawPlayer(x, y, p.name, "yellow");
+		drawPlayer(x, y, p.name, p.colour);
 	}
 
 	lastTime = time;
@@ -192,6 +196,7 @@ window.onload = () => {
 	canvas = document.getElementById("canvas");
 	ctx = canvas.getContext("2d");
 	nameInput = document.getElementById("name");
+	colourInput = document.getElementById("colour");
 	errorText = document.getElementById("error");
 	messages = document.getElementById("messages");
 	messageBox = document.getElementById("message");
@@ -234,6 +239,7 @@ window.onload = () => {
 
 function tryJoinGame() {
 	myName = nameInput.value;
+	myColour = colourInput.value;
 	if (!myName) {
 		errorText.innerHTML = "You must provide a name";
 		return;
@@ -248,6 +254,7 @@ function tryJoinGame() {
 
 	sendMessage({
 		type: "request-join",
-		name: myName
+		name: myName,
+		colour: myColour
 	});
 }
