@@ -136,6 +136,9 @@ function drawPlayer(x, y, name, colour) {
 
 	ctx.fillStyle = colour;
 	ctx.fillRect(x - playerSize / 2, y - playerSize / 2, playerSize, playerSize);
+
+	ctx.fillStyle = "black";
+	ctx.fillText(name, x, y - playerSize / 2 - 10);
 }
 
 let lastTime = 0;
@@ -155,6 +158,9 @@ function gameLoop(timestamp) {
 	// Draw
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	ctx.font = "16px serif";
+	ctx.textAlign = "center";
 
 	drawPlayer(playerX, playerY, myName, "red");
 
