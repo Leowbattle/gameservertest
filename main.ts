@@ -8,7 +8,7 @@ interface PlayerInfo {
 	y: number,
 }
 
-let players: Array<PlayerInfo> = [];
+const players: Array<PlayerInfo> = [];
 
 function playerExistsWithName(name: string): boolean {
 	return players.findIndex(p => p.name == name) != -1;
@@ -48,10 +48,10 @@ function gamewsHandler(req: Request): Response {
 
 	socket.addEventListener("close", () => {
 		// Remove this player
-		let i = players.findIndex(p => p.socket == socket);
+		const i = players.findIndex(p => p.socket == socket);
 
 		// Notify other players that someone has left
-		for (let p of players) {
+		for (const p of players) {
 			if (p.socket == socket) {
 				continue;
 			}
@@ -72,7 +72,7 @@ function gamewsHandler(req: Request): Response {
 	});
 
 	socket.addEventListener("message", e => {
-		let msg = JSON.parse(e.data);
+		const msg = JSON.parse(e.data);
 		if (msg.type == "request-join") {
 			if (players.findIndex(p => p.socket == socket) != -1) {
 				socket.send(JSON.stringify({
@@ -108,7 +108,7 @@ function gamewsHandler(req: Request): Response {
 				});
 
 				// Notify others that someone has joined
-				for (let p of players) {
+				for (const p of players) {
 					// if (p.socket == socket) {
 					// 	continue;
 					// }
@@ -123,13 +123,13 @@ function gamewsHandler(req: Request): Response {
 			}
 		}
 		else if (msg.type == "send-chat") {
-			let i = players.findIndex(p => p.socket == socket);
+			const i = players.findIndex(p => p.socket == socket);
 			if (i == -1) {
 				// Unjoined players cannot chat
 				return;
 			}
 
-			for (let p of players) {
+			for (const p of players) {
 				p.socket.send(JSON.stringify({
 					type: "recieve-chat",
 					from: players[i].name,
@@ -138,19 +138,27 @@ function gamewsHandler(req: Request): Response {
 			}
 		}
 		else if (msg.type == "player-update") {
-			let i = players.findIndex(p => p.socket == socket);
+			const i = players.findIndex(p => p.socket == socket);
 			if (i == -1) {
 				// Unjoined players cannot update position
 				// TODO: Reduce code duplication with unjoined player commands
 				return;
 			}
 
-			// for (let p of players) {
-			// 	p.socket.send(JSON.stringify({
-			// 		type: "player-update",
-			// 		from: p.name,
-			// 	}));
-			// }
+			players[i].x = msg.x;
+			players[i].y = msg.y;
+
+			for (const p of players) {
+				if (p.name == players[i].name) {
+					continue;
+				}
+				p.socket.send(JSON.stringify({
+					type: "player-update",
+					from: players[i].name,
+					x: players[i].x,
+					y: players[i].y
+				}));
+			}
 		}
 	});
 

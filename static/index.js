@@ -5,6 +5,7 @@ let errorText;
 let messages;
 let messageBox;
 let playerList;
+let myName;
 
 // How often to send player position to the server
 const UPDATE_FREQUENCY = 10;
@@ -15,8 +16,6 @@ function initSocket() {
 	socket = new WebSocket("gamews");
 	socket.addEventListener("open", () => {
 		console.log("new connection");
-
-		setInterval(sendUpdates, 1000 / UPDATE_FREQUENCY);
 	});
 
 	socket.addEventListener("close", () => {
@@ -29,7 +28,7 @@ function initSocket() {
 
 	socket.addEventListener("message", e => {
 		let msg = JSON.parse(e.data);
-		console.log(msg);
+		// console.log(msg);
 		
 		if (msg.type == "refuse-join") {
 			errorText.innerHTML = msg.reason;
@@ -40,6 +39,8 @@ function initSocket() {
 			onlinePlayers = msg.players;
 
 			updatePlayerList();
+
+			setInterval(sendUpdates, 1000 / UPDATE_FREQUENCY);
 		}
 		else if (msg.type == "player-joined") {
 			addChat("server", `${msg.name} has joined the game`);
@@ -64,6 +65,15 @@ function initSocket() {
 		}
 		else if (msg.type == "recieve-chat") {
 			addChat(msg.from, msg.text);
+		}
+		else if (msg.type == "player-update") {
+			console.log(`Player update: ${msg.from} ${msg.x} ${msg.y}`);
+
+			const p = onlinePlayers.find(p => p.name == msg.from);
+			if (p !== undefined) {
+				p.x = msg.x;
+				p.y = msg.y;
+			}
 		}
 	});
 }
@@ -106,6 +116,13 @@ function isKeyDown(k) {
 let playerX = 100;
 let playerY = 100;
 
+function drawPlayer(x, y, name, colour) {
+	const playerSize = 50;
+
+	ctx.fillStyle = colour;
+	ctx.fillRect(x - playerSize / 2, y - playerSize / 2, playerSize, playerSize);
+}
+
 let lastTime = 0;
 function gameLoop(timestamp) {
 	let time = timestamp / 1000;
@@ -114,7 +131,6 @@ function gameLoop(timestamp) {
 	// Update
 
 	const playerSpeed = 250;
-	const playerSize = 50;
 
 	if (isKeyDown("KeyW")) playerY -= playerSpeed * dt;
 	if (isKeyDown("KeyS")) playerY += playerSpeed * dt;
@@ -125,8 +141,14 @@ function gameLoop(timestamp) {
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	ctx.fillStyle = "red";
-	ctx.fillRect(playerX - playerSize / 2, playerY - playerSize / 2, playerSize, playerSize);
+	drawPlayer(playerX, playerY, myName, "red");
+
+	for (const p of onlinePlayers) {
+		if (p.name == myName) {
+			continue;
+		}
+		drawPlayer(p.x, p.y, p.name, "green");
+	}
 
 	lastTime = time;
 
@@ -178,8 +200,8 @@ window.onload = () => {
 }
 
 function tryJoinGame() {
-	let name = nameInput.value;
-	if (!name) {
+	myName = nameInput.value;
+	if (!myName) {
 		errorText.innerHTML = "You must provide a name";
 		return;
 	}
@@ -193,6 +215,6 @@ function tryJoinGame() {
 
 	sendMessage({
 		type: "request-join",
-		name: name
+		name: myName
 	});
 }
