@@ -18,7 +18,7 @@ function lerp(a, b, t) {
 }
 
 // How often to send player position to the server
-const UPDATE_FREQUENCY = 5;
+const UPDATE_FREQUENCY = 10;
 
 let onlinePlayers = [];
 let socket;
