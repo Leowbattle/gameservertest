@@ -137,10 +137,41 @@ function isKeyDown(k) {
 
 let screenLeft;
 let screenRight;
+let screenTop;
+let screenBottom;
 function setupCamera() {
 	screenLeft = playerX - canvas.width / 2;
+	screenRight = playerX + canvas.width / 2;
 	screenTop = playerY - canvas.height / 2;
+	screenBottom = playerY + canvas.height / 2;
 	ctx.translate(-screenLeft, -screenTop);
+}
+
+// Clip the line (x1, y1) to (x2, y2) to the rect (l, r, t, b)
+// assuming that (x1, y1) is inside the rect.
+function getLineIntersection(x1, y1, x2, y2, l, r, t, b) {
+	let tx;
+	let ty;
+
+	if (x2 > x1) {
+		tx = (r - x1) / (x2 - x1);
+	}
+	else {
+		tx = (l - x1) / (x2 - x1);
+	}
+
+	if (y2 > y1) {
+		ty = (b - y1) / (y2 - y1);
+	}
+	else {
+		ty = (t - y1) / (y2 - y1);
+	}
+
+	let tMin;
+	if (x1 == x2) tMin = ty; // If both are equal, then errrrm...?
+	if (y1 == y2) tMin = tx;
+	else tMin = Math.min(tx, ty);
+	return {x: x1 + tMin * (x2 - x1), y: y1 + tMin * (y2 - y1)};
 }
 
 let playerX = 100;
@@ -149,11 +180,38 @@ let playerY = 100;
 function drawPlayer(x, y, name, colour) {
 	const playerSize = 50;
 
-	ctx.fillStyle = colour;
-	ctx.fillRect(x - playerSize / 2, y - playerSize / 2, playerSize, playerSize);
+	// Screen space position of the player
+	const screenX = x - screenLeft;
+	const screenY = y - screenTop;
 
-	ctx.fillStyle = "white";
-	ctx.fillText(name, x, y - playerSize / 2 - 10);
+	if (screenX + playerSize / 2 < 0 || 
+		screenX - playerSize / 2 > canvas.width ||
+		screenY + playerSize / 2 < 0 ||
+		screenY - playerSize / 2 > canvas.height) {
+		
+		// Off screen - draw indicator on edge of screen showing player position
+
+		// Intersection of line from client player to currently being drawn player and edges of screen
+		const {x: ix, y: iy} = getLineIntersection(playerX, playerY, x, y, screenLeft, screenRight, screenTop, screenBottom);
+		
+		const indicatorRadius = 15;
+
+		ctx.strokeStyle = "cyan";
+		ctx.lineWidth = 3;
+
+		ctx.beginPath();
+		ctx.arc(ix, iy, indicatorRadius, 0, 2 * Math.PI);
+		ctx.stroke();
+	}
+	else {
+		// On screen
+
+		ctx.fillStyle = colour;
+		ctx.fillRect(x - playerSize / 2, y - playerSize / 2, playerSize, playerSize);
+	
+		ctx.fillStyle = "white";
+		ctx.fillText(name, x, y - playerSize / 2 - 10);
+	}
 }
 
 function drawBackground() {
@@ -191,7 +249,7 @@ function draw() {
 		const posAge = (Date.now() - p.lastUpdate) / 1000;
 		
 		const t = posAge * UPDATE_FREQUENCY;
-		console.log(posAge);
+		// console.log(posAge);
 		const x = lerp(p.lastX, p.x, t);
 		const y = lerp(p.lastY, p.y, t);
 
